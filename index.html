@@ -1,544 +1,465 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>不可以色色 · Color Match</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>ガラガラ福引き｜iPad 轉把手版</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{
-    --bg:#0c0f14; --panel:#121621; --glass:rgba(16,20,30,.55); --stroke:#222a38;
-    --text:#e8eef7; --muted:#94a0b2; --brand:#4da3ff; --brand-2:#6ce1c9;
+    --bg:#f6f7fb;
+    --ink:#101418;
+    --sub:#66707a;
+    --card:#fff;
+    --shadow:0 10px 30px rgba(0,0,0,.10);
+    --radius:22px;
   }
-  *{box-sizing:border-box} html,body{height:100%}
-  body{margin:0; background:
-      radial-gradient(1000px 1000px at 120% -10%, rgba(77,163,255,.12), transparent 55%),
-      radial-gradient(900px 900px at -10% 120%, rgba(108,225,201,.10), transparent 55%),
-      var(--bg);
-    color:var(--text); font-family:ui-sans-serif,-apple-system,"Noto Sans TC","Segoe UI",Roboto,Arial;
-    display:grid; grid-template-rows:auto 1fr auto; min-height:100dvh;}
-  header,footer{padding:12px 16px; background:rgba(12,15,20,.6); border-bottom:1px solid #1116}
-  footer{border-top:1px solid #1116; border-bottom:none; color:var(--muted); font-size:12px}
-  main{padding:12px; display:grid; gap:12px}
-
-  .camCard{position:relative; border:1px solid var(--stroke); border-radius:16px; overflow:hidden; background:linear-gradient(180deg,#0f131b,#0b0f16)}
-  .camera{position:relative; aspect-ratio:3/4; display:grid; place-items:center}
-  video{width:100%; height:100%; object-fit:cover; display:block; filter:contrast(1.02) saturate(1.02)}
-
-  .aim{position:absolute; inset:0; pointer-events:none; display:grid; place-items:center}
-  .aim::before{content:""; width:44%; aspect-ratio:1/1; border-radius:14px; outline:2px dashed rgba(255,255,255,.4); outline-offset:-10px; box-shadow: inset 0 0 0 9999px rgba(0,0,0,.10)}
-
-  .progress{position:absolute; left:0; right:0; top:0; height:6px; background:rgba(255,255,255,.06)}
-  .bar{height:100%; width:100%; background:linear-gradient(90deg,var(--brand),var(--brand-2)); box-shadow:0 0 16px rgba(77,163,255,.35) inset; transition:width .12s linear}
-
-  .hudTop{position:absolute; left:10px; right:10px; top:10px; display:flex; gap:10px; z-index:3; align-items:center}
-  .chip{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--stroke); border-radius:14px; background:var(--glass); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow:0 6px 18px rgba(0,0,0,.25)}
-  .mini{width:30px; height:30px; border-radius:8px; border:1px solid var(--stroke); background:#111}
-  .cap{display:flex; flex-direction:column; line-height:1.1}
-  .label{font-size:12px; color:#cfe2ff}
-  .val{font-weight:800; font-size:12px; letter-spacing:.2px}
-
-  .score{margin-left:auto; display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--stroke); border-radius:14px; background:var(--glass); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow:0 6px 18px rgba(0,0,0,.25)}
-  .big{font-size:28px; font-weight:900; letter-spacing:.3px}
-  .big.bump{animation:bump .35s ease}
-  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
-  .timer{font-variant-numeric:tabular-nums; color:#d9e7ff}
-
-  .controls{position:absolute; left:0; right:0; bottom:10px; z-index:3; display:flex; gap:10px; justify-content:center; align-items:center; padding:0 12px}
-  .btn{appearance:none; border:1px solid var(--stroke); color:var(--text); cursor:pointer; background:var(--glass); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-weight:800; border-radius:14px; padding:12px 14px}
-  .btn:disabled{opacity:.55; cursor:not-allowed}
-  .btn.sub{font-size:14px; padding:10px 12px}
-  .btn-start{padding:12px 16px}
-  .capture{width:72px; height:72px; border-radius:999px; border:2px solid rgba(255,255,255,.25); background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), rgba(255,255,255,.08) 45%, transparent 46%), linear-gradient(180deg,#1a8cff,#0066ff); box-shadow:0 8px 30px rgba(0,102,255,.45), inset 0 0 0 6px rgba(255,255,255,.08); display:grid; place-items:center; font-size:14px; transition:transform .06s ease}
-  .capture:active{transform:translateY(1px) scale(.98)}
-
-  details{border:1px solid var(--stroke); border-radius:16px; background:linear-gradient(180deg,#121621,#0f141e); overflow:hidden}
-  summary{padding:12px 14px; cursor:pointer}
-  .body{padding:12px 14px; display:grid; gap:12px}
-  .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-  .swatch{height:80px; border-radius:12px; border:1px solid var(--stroke); background:#000}
-  .meta{font-size:12px; color:#94a0b2}
-  .tag{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--stroke); background:var(--glass); color:#cfe6ff}
-
-  @media(min-width:900px){ main{grid-template-columns:1.25fr 1fr; align-items:start} details[open]{display:block} summary{display:none} }
-  .toast{position:absolute; left:50%; top:18%; transform:translateX(-50%); padding:10px 14px; border:1px solid var(--stroke); border-radius:999px; background:var(--glass); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); z-index:5; display:none; font-weight:700; box-shadow:0 8px 30px rgba(0,0,0,.45)}
-  .toast.show{display:inline-block; animation:fade .9s ease}
-  @keyframes fade{0%{opacity:0; transform:translate(-50%,-6px)}20%{opacity:1; transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
-
-  /* 中央巨大倒數（<=5秒時顯示） */
-  .centerCount{position:absolute; inset:0; display:none; place-items:center; z-index:4; pointer-events:none; color:#fff; text-shadow:0 8px 40px rgba(0,0,0,.55); font-weight:900; font-variant-numeric:tabular-nums;}
-  .centerCount.show{display:grid}
-  .centerCount .num{font-size:22vmin; line-height:1; transform:scale(1); opacity:.95; animation:pop 700ms ease-out;}
-  @keyframes pop{0%{transform:scale(.6); opacity:.2}40%{transform:scale(1.15); opacity:1}100%{transform:scale(1); opacity:.95}}
-
-  /* 名字輸入 Modal */
-  .mask{position:fixed; inset:0; background:rgba(0,0,0,.52); display:none; place-items:center; z-index:60; padding:16px}
-  .mask.show{display:grid}
-  .card{
-    width:min(680px, 96vw); border:1px solid var(--stroke); border-radius:18px;
-    background:linear-gradient(180deg,#131824,#0e1420); box-shadow:0 20px 60px rgba(0,0,0,.55);
-    padding:16px;
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Noto Sans TC", "Segoe UI", Roboto;
+    background: radial-gradient(1200px 800px at 70% -10%, #fff, var(--bg));
+    color:var(--ink);
+    overscroll-behavior: none;
   }
-  .card h2{margin:0 0 12px; font-size:20px}
-  .field{display:flex; gap:10px; margin-top:8px}
-  .input{flex:1; background:#0c111b; border:1px solid #223048; color:#e8eef7; padding:10px 12px; border-radius:10px}
-  .btnPri{appearance:none; border:1px solid #175bba; background:linear-gradient(180deg,#1a8cff,#0066ff); color:#fff; font-weight:800; border-radius:12px; padding:10px 14px; cursor:pointer}
-  .btnSec{appearance:none; border:1px solid var(--stroke); background:var(--glass); color:var(--text); font-weight:800; border-radius:12px; padding:10px 14px; cursor:pointer}
-
-  /* 結算 Modal */
-  .modal{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; place-items:center; padding:16px; z-index:50;}
-  .modal.show{display:grid}
-  .sumRow{display:flex; align-items:baseline; gap:10px; margin:10px 0 16px}
-  .sumVal{font-size:34px; font-weight:900}
-  .bestBadge{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid #66512c; background:linear-gradient(180deg, #2b220e, #1d1609); color:#ffd87a; font-weight:800}
-  .bestBadge.sparkle{animation:spark 1.2s ease-in-out infinite}
-  @keyframes spark{0%{box-shadow:0 0 0 rgba(255,216,122,0)}50%{box-shadow:0 0 24px rgba(255,216,122,.45)}100%{box-shadow:0 0 0 rgba(255,216,122,0)}}
-  .table{width:100%; border-collapse:separate; border-spacing:0 8px; font-size:14px}
-  .row{background:var(--glass); border:1px solid var(--stroke); border-radius:12px; overflow:hidden}
-  .row td{padding:10px}
-  .sw{width:36px; height:20px; border-radius:6px; border:1px solid var(--stroke); display:inline-block; vertical-align:middle}
-  .actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin-top:12px}
-  .leader{margin-top:12px; border-top:1px dashed #2a3446; padding-top:12px}
-  .leader h3{margin:0 0 8px; font-size:16px}
-  .leader ol{margin:0; padding-left:18px}
+  .wrap{max-width:1320px;margin:0 auto;padding:22px; padding-bottom: max(22px, env(safe-area-inset-bottom));}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+  h1{font-size: clamp(18px, 2.6vw, 28px);margin:0}
+  .sub{color:var(--sub);margin:2px 0 0 0;font-size:14px}
+  main{display:grid;grid-template-columns: 1.15fr .85fr;gap:22px}
+  @media (max-width: 1024px){
+    main{grid-template-columns: 1fr;gap:14px}
+  }
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .stage{display:grid;grid-template-rows:auto 1fr auto;gap:18px;min-height:520px}
+  .machine{position:relative;height:min(56vh, 560px);display:grid;place-items:center;overflow:hidden;touch-action:manipulation}
+  .drum{width:min(520px, 92%);aspect-ratio:1/1}
+  .hex{transform-origin:50% 50%}
+  .spin .hex{animation:roll 1.6s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes roll{0%{transform:rotate(0)}100%{transform:rotate(720deg)}}
+  .crank{transform-origin: 165px 99px} /* pivot */
+  .crank.grabbing #knob{filter:brightness(1.2)}
+  .ball-slot{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px}
+  .ball{width:72px;height:72px;border-radius:50%;border:3px solid #1112;background:#e5e7eb;
+        box-shadow: inset 0 8px 12px rgba(255,255,255,.7), inset 0 -10px 14px rgba(0,0,0,.15), 0 10px 16px rgba(0,0,0,.08);
+        display:grid;place-items:center;font-weight:800;color:#111c;transform:translateY(90px);opacity:0}
+  .ball.show{animation:pop .5s ease-out forwards}
+  @keyframes pop{0%{transform:translateY(90px) scale(.9);opacity:0}60%{transform:translateY(-6px) scale(1.04);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+  .label{font-size:22px;font-weight:800;letter-spacing:.08em;padding:10px 16px;border-radius:14px;background:#111;color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.18);min-width:112px;text-align:center}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
+  button,.btn{appearance:none;border:0;cursor:pointer;padding:16px 22px;border-radius:16px;font-weight:800;
+              background:#111;color:#fff;transition:transform .04s ease,filter .2s ease;min-height:56px;font-size:18px}
+  button:active{transform:translateY(1px)}
+  .btn-ghost{background:#e5e7eb;color:#111}
+  .btn-success{background:#16a34a}
+  .odds{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
+  .odds .row{display:flex;align-items:center;gap:10px;background:#f3f4f6;border-radius:14px;padding:12px 14px;font-size:18px}
+  .chip{width:22px;height:22px;border-radius:50%;border:2px solid #1113;box-shadow: inset 0 3px 5px rgba(255,255,255,.7), inset 0 -3px 5px rgba(0,0,0,.2);flex:0 0 22px}
+  .chip.white{background:#fafafa}.chip.blue{background:#3b82f6}.chip.red{background:#ef4444}.chip.yellow{background:#fbbf24}
+  input[type="number"]{width:100%;padding:12px 12px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;font-size:18px}
+  .stats{display:grid;gap:12px}
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .pill{display:grid;gap:8px;justify-items:center;padding:14px;border-radius:16px;background:#f3f4f6}
+  .pill .count{font-size:28px;font-weight:900}
+  .history{margin-top:8px;max-height:42vh;overflow:auto;border:1px dashed #e5e7eb;border-radius:14px;padding:12px;background:#fff}
+  .history .item{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid #f3f4f6}
+  .history .item:last-child{border-bottom:0}
+  .time{color:#9ca3af;font-size:13px;margin-left:auto}
+  #confetti{position:fixed;inset:0;pointer-events:none}
+  .hint{display:block;margin-top:6px;color:#66707a;font-size:13px;text-align:center}
+  #crankHit{cursor:grab}
+  .grabbing #crankHit{cursor:grabbing}
 </style>
 </head>
 <body>
-<header><strong>不可以色色</strong></header>
+<canvas id="confetti"></canvas>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ガラガラ福引き｜iPad 轉把手版</h1>
+      <p class="sub">用手指抓住把手「轉一圈」就會出球。也可以點畫面任一處抽一次。</p>
+    </div>
+  </header>
 
-<main>
-  <section class="camCard">
-    <div class="camera">
-      <video id="video" autoplay playsinline muted></video>
-      <div class="progress"><div id="bar" class="bar"></div></div>
+  <main>
+    <section class="card stage" aria-label="抽選機">
+      <div class="machine" id="machine" title="抓住把手旋轉試試看">
+        <svg class="drum" id="drumSvg" viewBox="0 0 200 200" role="img" aria-label="福引き機">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#f59e0b"/>
+              <stop offset="1" stop-color="#b45309"/>
+            </linearGradient>
+            <linearGradient id="wood" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#d6b28a"/>
+              <stop offset="1" stop-color="#a8825a"/>
+            </linearGradient>
+          </defs>
+          <rect x="20" y="160" width="160" height="18" rx="6" fill="url(#wood)"/>
+          <rect x="50" y="150" width="100" height="10" rx="4" fill="url(#wood)"/>
+          <g class="hex" id="hex">
+            <polygon points="100,35 145,55 165,100 145,145 100,165 55,145 35,100 55,55" fill="url(#g1)" stroke="#8b5a11" stroke-width="2"/>
+            <polygon points="100,60 130,73 140,100 130,127 100,140 70,127 60,100 70,73" fill="#fde68a" opacity=".9" stroke="#b45309" stroke-width="1.5"/>
+            <circle cx="100" cy="100" r="7" fill="#1f2937"/>
+          </g>
+          <!-- crank group (pivot around 165,99) -->
+          <g class="crank" id="crank">
+            <rect x="122" y="96" width="38" height="6" rx="3" fill="#374151"/>
+            <circle id="knob" cx="165" cy="99" r="7" fill="#111"/>
+            <circle cx="165" cy="99" r="4" fill="#e5e7eb"/>
+            <!-- larger invisible hit area -->
+            <circle id="crankHit" cx="165" cy="99" r="18" fill="transparent"/>
+          </g>
+          <rect x="92" y="138" width="16" height="22" rx="3" fill="#111"/>
+          <rect x="84" y="156" width="32" height="8" rx="3" fill="#111"/>
+        </svg>
 
-      <div class="hudTop">
-        <div class="chip">
-          <div class="mini" id="hudTarget"></div>
-          <div class="cap"><span class="label">目標</span><span class="val" id="hudTargetHex">—</span></div>
-        </div>
-        <div class="chip">
-          <div class="mini" id="hudShot"></div>
-          <div class="cap"><span class="label">你的拍攝</span><span class="val" id="hudShotHex">—</span></div>
-        </div>
-        <div class="score" title="以 0–100% 表示相似度">
-          <span class="timer">剩 <span id="timeLeft">10.0</span>s</span>
-          <span class="big" id="score">0%</span>
+        <div class="ball-slot" aria-live="polite">
+          <div class="ball" id="ball"><span id="ballText">？</span></div>
+          <div class="label" id="label">抓住把手轉動</div>
         </div>
       </div>
-
-      <div class="aim"></div>
-
-      <!-- 中央巨大倒數 -->
-      <div id="centerCountdown" class="centerCount"><div class="num">5</div></div>
 
       <div class="controls">
-        <button id="btnStart" class="btn btn-start">開始鏡頭</button>
-        <button id="btnNew" class="btn sub" title="換一個目標色">換題</button>
-        <button id="btnCapture" class="btn capture">拍照</button>
+        <button class="btn" id="rollBtn" aria-label="搖一下">🎲 點一下抽</button>
+        <button class="btn btn-ghost" id="copyBtn" title="複製結果">複製結果</button>
+        <button class="btn btn-success" id="resetBtn" title="重置">重置</button>
       </div>
 
-      <div id="toast" class="toast">時間到，進入下一回合 ▶</div>
-    </div>
-  </section>
+      <div class="odds" aria-label="中獎機率設定">
+        <div class="row"><span class="chip white"></span><label>白 <input type="number" min="0" step="1" value="60" id="odds-white"></label></div>
+        <div class="row"><span class="chip blue"></span><label>藍 <input type="number" min="0" step="1" value="20" id="odds-blue"></label></div>
+        <div class="row"><span class="chip red"></span><label>紅 <input type="number" min="0" step="1" value="15" id="odds-red"></label></div>
+        <div class="row"><span class="chip yellow"></span><label>黃 <input type="number" min="0" step="1" value="5" id="odds-yellow"></label></div>
+        <span class="hint">提示：加入主畫面可全螢幕；把手轉夠一圈（約360°）會自動出球。</span>
+      </div>
+    </section>
 
-  <section>
-    <details open>
-      <summary>顏色與結果（點我展開/收合）</summary>
-      <div class="body">
-        <div class="meta">回合：<span id="roundNow">1</span>/<span id="roundMax">3</span>　｜　隱私：影像僅本機比對，不上傳。</div>
-        <div class="grid">
-          <div>
-            <div class="meta">目標色</div>
-            <div id="targetSwatch" class="swatch"></div>
-            <div id="targetHex" style="font-weight:800; margin-top:6px;">—</div>
-            <div id="targetHsl" class="meta">—</div>
-          </div>
-          <div>
-            <div class="meta">你的拍攝</div>
-            <div id="shotSwatch" class="swatch"></div>
-            <div id="shotHex" style="font-weight:800; margin-top:6px;">—</div>
-            <div id="shotHsl" class="meta">—</div>
-          </div>
+    <aside class="card">
+      <div class="stats">
+        <div class="statgrid">
+          <div class="pill"><div class="chip white"></div><div>白</div><div class="count" id="c-white">0</div></div>
+          <div class="pill"><div class="chip blue"></div><div>藍</div><div class="count" id="c-blue">0</div></div>
+          <div class="pill"><div class="chip red"></div><div>紅</div><div class="count" id="c-red">0</div></div>
+          <div class="pill"><div class="chip yellow"></div><div>黃</div><div class="count" id="c-yellow">0</div></div>
         </div>
-        <div class="tag" id="deltaE">ΔE —</div>
-        <div class="tag" id="judgement">尚未判定</div>
+        <div class="history" id="history"></div>
       </div>
-    </details>
-  </section>
-
-  <canvas id="canvas" width="720" height="960"></canvas>
-</main>
-
-<footer>提示：倒數期間可不限次拍照；時間到會自動進入下一回合並統計總分。</footer>
-
-<!-- 名字輸入 -->
-<div id="nameMask" class="mask" role="dialog" aria-modal="true">
-  <div class="card">
-    <h2>請輸入你的名字</h2>
-    <p class="meta">會用於排行榜（最多 32 字，之後可在右上角清除瀏覽器儲存重新輸入）。</p>
-    <div class="field">
-      <input id="nameInput" class="input" maxlength="32" placeholder="例如：Jerry" />
-      <button id="nameOK" class="btnPri">確定</button>
-    </div>
-  </div>
+    </aside>
+  </main>
 </div>
 
-<!-- 結算 Modal -->
-<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
-  <div class="card" id="resultCard">
-    <h2 id="resultTitle">本局成績</h2>
-    <div class="sumRow">
-      <div>平均相似度</div>
-      <div id="avgVal" class="sumVal">0%</div>
-      <div id="bestWrap" style="margin-left:auto; display:none;">
-        <span class="bestBadge" id="bestBadge">⭐ 最佳單回合 <span id="bestVal">0%</span></span>
-      </div>
-    </div>
-    <table class="table">
-      <thead>
-        <tr><th>回合</th><th>相似度</th><th>目標/拍攝</th></tr>
-      </thead>
-      <tbody id="resultRows"></tbody>
-    </table>
-
-    <div class="leader" id="leaderboard">
-      <h3>排行榜 TOP 5</h3>
-      <ol id="leaderList"></ol>
-    </div>
-
-    <div class="actions">
-      <button id="btnSavePng" class="btnSec">📸 下載成圖片</button>
-      <button id="btnRetry" class="btnPri">再玩一次</button>
-    </div>
-  </div>
-</div>
-
-<!-- html2canvas for screenshot -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+<canvas id="confetti"></canvas>
 
 <script>
-(async function(){
-  /** ====== 你的 API（Google Apps Script） ====== */
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxmbjTQba-b0LI5S4bwGtNahg2VW-PxTacQggzCQuepRsBZxNneqMV3rWcMHcU6p98/exec';
+(function(){
+  const rollBtn = document.getElementById('rollBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const machine = document.getElementById('machine');
+  const ballEl = document.getElementById('ball');
+  const labelEl = document.getElementById('label');
+  const histEl = document.getElementById('history');
+  const drumSvg = document.getElementById('drumSvg');
+  const crank = document.getElementById('crank');
+  const crankHit = document.getElementById('crankHit');
+  const hex = document.getElementById('hex');
 
-  /** ====== DOM ====== */
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const counters = {
+    white: document.getElementById('c-white'),
+    blue:  document.getElementById('c-blue'),
+    red:   document.getElementById('c-red'),
+    yellow:document.getElementById('c-yellow')
+  };
 
-  const btnStart = document.getElementById('btnStart');
-  const btnNew = document.getElementById('btnNew');
-  const btnCapture = document.getElementById('btnCapture');
+  const oddsInputs = {
+    white: document.getElementById('odds-white'),
+    blue:  document.getElementById('odds-blue'),
+    red:   document.getElementById('odds-red'),
+    yellow:document.getElementById('odds-yellow')
+  };
 
-  const hudTarget = document.getElementById('hudTarget');
-  const hudTargetHex = document.getElementById('hudTargetHex');
-  const hudShot = document.getElementById('hudShot');
-  const hudShotHex = document.getElementById('hudShotHex');
+  const COLORS = {
+    white: { zh:'白', ja:'白', css:'#fafafa', text:'#111', conf:'#e5e7eb' },
+    blue:  { zh:'藍', ja:'青', css:'#3b82f6', text:'#fff', conf:'#93c5fd' },
+    red:   { zh:'紅', ja:'赤', css:'#ef4444', text:'#fff', conf:'#fca5a5' },
+    yellow:{ zh:'黃', ja:'黄', css:'#fbbf24', text:'#111', conf:'#fde68a' }
+  };
 
-  const scoreEl = document.getElementById('score');   // 0–100%
-  const timeLeftEl = document.getElementById('timeLeft');
-  const bar = document.getElementById('bar');
-  const toast = document.getElementById('toast');
+  let counts = {white:0, blue:0, red:0, yellow:0};
+  let spinning = false;
+  let lastResult = null;
 
-  const targetSwatch = document.getElementById('targetSwatch');
-  const targetHex = document.getElementById('targetHex');
-  const targetHsl = document.getElementById('targetHsl');
-  const shotSwatch = document.getElementById('shotSwatch');
-  const shotHex = document.getElementById('shotHex');
-  const shotHsl = document.getElementById('shotHsl');
-  const deltaEEl = document.getElementById('deltaE');
-  const judgeEl = document.getElementById('judgement');
-  const roundNowEl = document.getElementById('roundNow');
-  const roundMaxEl = document.getElementById('roundMax');
+  // Crank drag state
+  let dragging = false;
+  let lastAngle = 0;
+  let accumDeg = 0;         // accumulated degrees since drag start
+  const TRIGGER_DEG = 360;  // rotate roughly one full turn to trigger
 
-  const centerCountdown = document.getElementById('centerCountdown');
-  const centerNum = centerCountdown.querySelector('.num');
+  function now(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
 
-  // 名字輸入
-  const nameMask = document.getElementById('nameMask');
-  const nameInput = document.getElementById('nameInput');
-  const nameOK = document.getElementById('nameOK');
+  function readWeights(){
+    const w = {
+      white: Math.max(0, parseInt(oddsInputs.white.value||'0',10)),
+      blue:  Math.max(0, parseInt(oddsInputs.blue.value ||'0',10)),
+      red:   Math.max(0, parseInt(oddsInputs.red.value  ||'0',10)),
+      yellow:Math.max(0, parseInt(oddsInputs.yellow.value||'0',10)),
+    };
+    const total = w.white + w.blue + w.red + w.yellow;
+    return {w, total};
+  }
 
-  // 結算
-  const modal = document.getElementById('modal');
-  const resultCard = document.getElementById('resultCard');
-  const resultRows = document.getElementById('resultRows');
-  const avgVal = document.getElementById('avgVal');
-  const bestWrap = document.getElementById('bestWrap');
-  const bestBadge = document.getElementById('bestBadge');
-  const bestVal = document.getElementById('bestVal');
-  const leaderList = document.getElementById('leaderList');
-
-  const btnRetry = document.getElementById('btnRetry');
-  const btnSavePng = document.getElementById('btnSavePng');
-
-  /** ====== State ====== */
-  const ROUND_MAX = 3;
-  const TIME_PER_ROUND = 10.0; // 秒
-  let roundNow = 1, stream = null, raf = null;
-  let target = null;             // {r,g,b}
-  let lastShot = {r:17,g:17,b:17};
-  let lastScore = 0;             // 0–100（相似度%）
-  const results = [];            // {round, percent, targetHex, shotHex}
-  let lastCenterShown = null;
-
-  /** ====== Utils: 色彩與計分 ====== */
-  function rgbToHex({r,g,b}){ return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase(); }
-  function rgbToHsl({r,g,b}){ r/=255; g/=255; b/=255; const max=Math.max(r,g,b), min=Math.min(r,g,b); let h=0,s=0,l=(max+min)/2; if(max!==min){ const d=max-min; s=l>0.5? d/(2-max-min): d/(max+min); switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break;} h/=6;} return {h:Math.round(h*360), s:Math.round(s*100), l:Math.round(l*100)}; }
-  function srgbToX(v){ return (v<=0.04045)? v/12.92 : Math.pow((v+0.055)/1.055,2.4); }
-  function rgbToLab({r,g,b}){ let R=srgbToX(r/255), G=srgbToX(g/255), B=srgbToX(b/255); let X=R*0.4124564+G*0.3575761+B*0.1804375; let Y=R*0.2126729+G*0.7151522+B*0.0721750; let Z=R*0.0193339+G*0.1191920+B*0.9503041; const Xn=0.95047, Yn=1.00000, Zn=1.08883; function f(t){ return t>0.008856? Math.cbrt(t) : (7.787*t+16/116); } let fx=f(X/Xn), fy=f(Y/Yn), fz=f(Z/Zn); return {L:116*fy-16, a:500*(fx-fy), b:200*(fy-fz)}; }
-  function ciede2000(l1,l2){ const {L:L1,a:a1,b:b1}=l1, {L:L2,a:a2,b:b2}=l2; const kL=1,kC=1,kH=1; const C1=Math.hypot(a1,b1), C2=Math.hypot(a2,b2), Cbar=(C1+C2)/2; const G=0.5*(1-Math.sqrt(Math.pow(Cbar,7)/(Math.pow(Cbar,7)+Math.pow(25,7)))); const a1p=(1+G)*a1, a2p=(1+G)*a2; const C1p=Math.hypot(a1p,b1), C2p=Math.hypot(a2p,b2); const h1p=(Math.atan2(b1,a1p)*180/Math.PI+360)%360, h2p=(Math.atan2(b2,a2p)*180/Math.PI+360)%360; const dLp=L2-L1, dCp=C2p-C1p; let dhp; if(C1p*C2p===0) dhp=0; else{ const diff=h2p-h1p; dhp=Math.abs(diff)<=180?diff:(diff>180?diff-360:diff+360); } const dHp=2*Math.sqrt(C1p*C2p)*Math.sin((dhp/2)*Math.PI/180); const Lbar=(L1+L2)/2, Cpbar=(C1p+C2p)/2; let hpbar; if(C1p*C2p===0) hpbar=h1p+h2p; else{ const diff=Math.abs(h1p-h2p); hpbar = diff<=180 ? (h1p+h2p)/2 : (h1p+h2p+360)/2 - ((h1p+h2p)>=360?360:0); } const T=1-0.17*Math.cos((hpbar-30)*Math.PI/180)+0.24*Math.cos((2*hpbar)*Math.PI/180)+0.32*Math.cos((3*hpbar+6)*Math.PI/180)-0.20*Math.cos((4*hpbar-63)*Math.PI/180); const Sl=1+(0.015*Math.pow(Lbar-50,2))/Math.sqrt(20+Math.pow(Lbar-50,2)); const Sc=1+0.045*Cpbar; const Sh=1+0.015*Cpbar*T; const dTheta=30*Math.exp(-Math.pow((hpbar-275)/25,2)); const Rc=2*Math.sqrt(Math.pow(Cpbar,7)/(Math.pow(Cpbar,7)+Math.pow(25,7))); const Rt=-Rc*Math.sin(2*dTheta*Math.PI/180); return Math.sqrt(Math.pow(dLp/(kL*Sl),2)+Math.pow(dCp/(kC*Sc),2)+Math.pow(dHp/(kH*Sh),2)+Rt*(dCp/(kC*Sc))*(dHp/(kH*Sh))); }
-  function percentFromDeltaE(dE){ return Math.round(100*Math.exp(-Math.pow(dE/15,2))); }
-  function hslToRgb(h,s,l){ s/=100; l/=100; const c=(1-Math.abs(2*l-1))*s, hp=h/60, x=c*(1-Math.abs(hp%2-1)); let r1=0,g1=0,b1=0; if(0<=hp&&hp<1){r1=c;g1=x}else if(1<=hp&&hp<2){r1=x;g1=c}else if(2<=hp&&hp<3){g1=c;b1=x}else if(3<=hp&&hp<4){g1=x;b1=c}else if(4<=hp&&hp<5){r1=x;b1=c}else if(5<=hp&&hp<=6){r1=c;b1=x} const m=l-c/2; return {r:Math.round((r1+m)*255), g:Math.round((g1+m)*255), b:Math.round((b1+m)*255)}; }
-  function randomTargetColor(){ const h=Math.floor(Math.random()*360); const s=Math.floor(55+Math.random()*35); const l=Math.floor(40+Math.random()*25); const rgb=hslToRgb(h,s,l); return {rgb, hsl:{h,s,l}}; }
-
-  /** ====== 拍攝取樣 ====== */
-  function captureCenterAverage(ratio=0.44){
-    const vw = video.videoWidth || 720, vh = video.videoHeight || 960;
-    canvas.width = vw; canvas.height = vh;
-    ctx.drawImage(video,0,0,vw,vh);
-    const bw=Math.floor(vw*ratio), bh=Math.floor(vh*ratio);
-    const x0=Math.floor((vw-bw)/2), y0=Math.floor((vh-bh)/2);
-    const img=ctx.getImageData(x0,y0,bw,bh).data;
-    let r=0,g=0,b=0,cnt=0;
-    for(let i=0;i<img.length;i+=4){
-      const R=img[i], G=img[i+1], B=img[i+2];
-      const L=0.2126*R+0.7152*G+0.0722*B;
-      if(L<10||L>245) continue; // 略過太暗/太亮
-      r+=R; g+=G; b+=B; cnt++;
+  function weightedPick(){
+    const {w, total} = readWeights();
+    if(total <= 0){
+      w.white=60; w.blue=20; w.red=15; w.yellow=5;
     }
-    if(!cnt) return {r:0,g:0,b:0};
-    return {r:Math.round(r/cnt), g:Math.round(g/cnt), b:Math.round(b/cnt)};
+    const t = w.white + w.blue + w.red + w.yellow;
+    let r = Math.random() * t;
+    if((r -= w.white) < 0) return 'white';
+    if((r -= w.blue ) < 0) return 'blue';
+    if((r -= w.red  ) < 0) return 'red';
+    return 'yellow';
   }
 
-  /** ====== UI 同步 ====== */
-  function setTarget({rgb,hsl}){
-    target = rgb;
-    const hex = rgbToHex(rgb);
-    hudTarget.style.background = hex; hudTargetHex.textContent = hex;
-    targetSwatch.style.background = hex; targetHex.textContent = hex;
-    targetHsl.textContent = `HSL(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
-  }
-  function setShot(rgb){
-    lastShot = rgb;
-    const hex = rgbToHex(rgb);
-    hudShot.style.background = hex; hudShotHex.textContent = hex;
-    shotSwatch.style.background = hex; shotHex.textContent = hex;
-    const hsl = rgbToHsl(rgb); shotHsl.textContent = `HSL(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
-  }
-  function resetShotAndScore(){
-    setShot({r:17,g:17,b:17});
-    lastScore = 0;
-    scoreEl.textContent = "0%";
-    deltaEEl.textContent = "ΔE —";
-    judgeEl.textContent = "尚未判定";
-    centerCountdown.classList.remove('show');
-    lastCenterShown = null;
+  function setBall(colorKey){
+    const c = COLORS[colorKey];
+    ballEl.style.background = c.css;
+    ballEl.style.color = c.text;
+    ballEl.querySelector('#ballText').textContent = c.zh;
+    labelEl.textContent = `中獎：${c.zh}（${c.ja}）`;
   }
 
-  /** ====== 計時與倒數 ====== */
-  function startTimer(){
-    stopTimer();
-    const T = TIME_PER_ROUND;
-    const t0 = performance.now();
-    function tick(t){
-      const elapsed = (t - t0)/1000;
-      const remain = Math.max(0, T - elapsed);
-      timeLeftEl.textContent = remain.toFixed(1);
-      bar.style.width = (Math.max(0, 1 - elapsed/T)*100).toFixed(2) + '%';
+  function addHistory(colorKey){
+    const c = COLORS[colorKey];
+    const div = document.createElement('div');
+    div.className = 'item';
+    const dot = document.createElement('span');
+    dot.className = 'chip';
+    dot.style.background = c.css; dot.style.borderColor = '#0002';
+    const name = document.createElement('b');
+    name.textContent = `${c.zh}`;
+    const time = document.createElement('span');
+    time.className = 'time';
+    time.textContent = now();
+    div.appendChild(dot); div.appendChild(name); div.appendChild(time);
+    histEl.prepend(div);
+  }
 
-      const sec = Math.ceil(remain);
-      if (sec <= 5 && sec > 0) {
-        if (sec !== lastCenterShown) {
-          lastCenterShown = sec;
-          centerNum.textContent = String(sec);
-          centerNum.classList.remove('num'); void centerCountdown.offsetWidth; centerNum.classList.add('num');
-        }
-        centerCountdown.classList.add('show');
-      } else {
-        centerCountdown.classList.remove('show');
-      }
+  function updateCounts(){
+    counters.white.textContent = counts.white;
+    counters.blue.textContent  = counts.blue;
+    counters.red.textContent   = counts.red;
+    counters.yellow.textContent= counts.yellow;
+  }
 
-      if(remain<=0){
-        stopTimer();
-        btnCapture.disabled = true;
-        judgeEl.textContent = "時間到 ⏱️";
-        centerCountdown.classList.remove('show');
-        toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 900);
-        lockRoundResultAndNext();
-        return;
-      }
-      raf = requestAnimationFrame(tick);
+  function confettiBurst(hexColor){
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.max(1, window.devicePixelRatio||1);
+    function resize(){
+      canvas.width = innerWidth * dpr;
+      canvas.height = innerHeight * dpr;
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
     }
-    raf = requestAnimationFrame(tick);
-  }
-  function stopTimer(){ if(raf){ cancelAnimationFrame(raf); raf=null; } }
-
-  /** ====== 鏡頭 ====== */
-  async function startCamera(){
-    if(stream) return;
-    try{
-      stream = await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:1920} },
-        audio:false
+    resize();
+    const particles = [];
+    const N = 140;
+    const colors = [hexColor, '#ffffff', '#111111', '#e5e7eb'];
+    for(let i=0;i<N;i++){
+      particles.push({
+        x: canvas.width/2, y: canvas.height/2,
+        vx: (Math.random()-0.5)*9*dpr,
+        vy: (Math.random()-1.2)*7*dpr,
+        g: 0.18*dpr,
+        s: (6+Math.random()*8)*dpr,
+        r: Math.random()*Math.PI*2,
+        vr: (Math.random()-.5)*0.2,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        life: 60 + Math.random()*40
       });
-      video.srcObject = stream; await video.play();
-    }catch(e){
-      alert("無法開啟鏡頭，請確認權限與 HTTPS。"); console.error(e);
+    }
+    let tick=0, anim;
+    function loop(){
+      anim = requestAnimationFrame(loop);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p=>{
+        p.x += p.vx; p.y += p.vy; p.vy += p.g; p.r += p.vr; p.life -= 1;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.r);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.s/2, -p.s/2, p.s, p.s);
+        ctx.restore();
+      });
+      tick++;
+      if(tick>90){ cancelAnimationFrame(anim); ctx.clearRect(0,0,canvas.width,canvas.height); }
+    }
+    loop();
+  }
+
+  function roll(){
+    if(spinning) return;
+    spinning = true;
+    machine.classList.add('spin');
+    labelEl.textContent = '抽選中…';
+    ballEl.classList.remove('show');
+
+    setTimeout(()=>{
+      const color = weightedPick();
+      lastResult = color;
+      setBall(color);
+      ballEl.classList.add('show');
+      counts[color]++;
+      updateCounts();
+      addHistory(color);
+      machine.classList.remove('spin');
+      spinning = false;
+      confettiBurst(COLORS[color].conf);
+    }, 1400);
+  }
+
+  function resetAll(){
+    counts = {white:0, blue:0, red:0, yellow:0};
+    updateCounts();
+    histEl.innerHTML='';
+    labelEl.textContent='已重置';
+    lastResult = null;
+    ballEl.classList.remove('show');
+    ballEl.style.background = '#e5e7eb';
+    ballEl.style.color = '#111c';
+    ballEl.querySelector('#ballText').textContent = '？';
+  }
+
+  function copyResult(){
+    const {w} = readWeights();
+    const weightInfo = `機率權重（白/藍/紅/黃）：${w.white}/${w.blue}/${w.red}/${w.yellow}`;
+    const text = lastResult
+      ? `福引結果：${COLORS[lastResult].zh}（${COLORS[lastResult].ja}）｜${weightInfo}`
+      : `尚未抽選。${weightInfo}`;
+    navigator.clipboard.writeText(text).then(()=>{
+      labelEl.textContent = '已複製結果';
+      setTimeout(()=>{ labelEl.textContent = lastResult? `中獎：${COLORS[lastResult].zh}` : '抓住把手轉動'; }, 900);
+    }).catch(()=>{});
+  }
+
+  // ----- 把手拖曳旋轉 -----
+  function getCenterOf(el){
+    const rect = el.getBoundingClientRect();
+    return { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+  }
+  function angleFromCenter(center, clientX, clientY){
+    return Math.atan2(clientY - center.y, clientX - center.x); // radians
+  }
+  function radToDeg(r){ return r * 180 / Math.PI; }
+  function normDeltaDeg(deg){
+    while(deg > 180) deg -= 360;
+    while(deg < -180) deg += 360;
+    return deg;
+  }
+
+  function startDrag(e){
+    if(spinning) return;
+    const pt = e.touches?.[0] || e;
+    // only start if actually touching the knob hit area
+    if(e.target !== crankHit) return;
+    dragging = true;
+    accumDeg = 0;
+    const center = getCenterOf(crankHit);
+    crank.dataset.cx = center.x;
+    crank.dataset.cy = center.y;
+    lastAngle = angleFromCenter(center, pt.clientX, pt.clientY);
+    crank.classList.add('grabbing');
+    try{ crankHit.setPointerCapture?.(e.pointerId); }catch(_){}
+  }
+  function moveDrag(e){
+    if(!dragging) return;
+    const pt = e.touches?.[0] || e;
+    const cx = parseFloat(crank.dataset.cx), cy = parseFloat(crank.dataset.cy);
+    const ang = angleFromCenter({x:cx, y:cy}, pt.clientX, pt.clientY);
+    let delta = radToDeg(ang - lastAngle);
+    delta = normDeltaDeg(delta);
+    lastAngle = ang;
+    accumDeg += delta;
+
+    // visible crank wobble
+    const clamp = Math.max(-30, Math.min(30, accumDeg % 60));
+    crank.style.transform = `rotate(${clamp}deg)`;
+    // subtle drum rotation
+    hex.style.transform = `rotate(${(accumDeg*0.5)%360}deg)`;
+    labelEl.textContent = `轉動中… ${Math.floor(Math.abs(accumDeg))}°`;
+
+    if(Math.abs(accumDeg) >= TRIGGER_DEG){
+      endDrag();
+      crank.style.transform = `rotate(0deg)`;
+      machine.classList.add('spin');
+      setTimeout(()=>{
+        machine.classList.remove('spin');
+        roll();
+      }, 200);
+    }
+  }
+  function endDrag(){
+    if(!dragging) return;
+    dragging = false;
+    crank.classList.remove('grabbing');
+    crank.style.transform = `rotate(0deg)`;
+    hex.style.transform = `rotate(0deg)`;
+    if(Math.abs(accumDeg) < TRIGGER_DEG){
+      labelEl.textContent = '再多轉一點！';
+      setTimeout(()=>{ if(!spinning) labelEl.textContent = '抓住把手轉動'; }, 900);
     }
   }
 
-  /** ====== 回合流程 ====== */
-  roundMaxEl.textContent = String(ROUND_MAX);
-  function beginRound(){
-    setTarget(randomTargetColor());
-    resetShotAndScore();
-    btnCapture.disabled = false;
-    startTimer();
+  // 綁定事件（優先使用 Pointer Events）
+  if(window.PointerEvent){
+    crankHit.addEventListener('pointerdown', startDrag);
+    window.addEventListener('pointermove', moveDrag);
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+  }else{
+    crankHit.addEventListener('touchstart', startDrag, {passive:false});
+    window.addEventListener('touchmove', moveDrag, {passive:false});
+    window.addEventListener('touchend', endDrag);
+    crankHit.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
   }
 
-  function lockRoundResultAndNext(){
-    const tgtHex = hudTargetHex.textContent || '#000000';
-    const shotHexNow = hudShotHex.textContent || '#000000';
-    results.push({ round: results.length+1, percent: lastScore, targetHex: tgtHex, shotHex: shotHexNow });
+  // 備用操作
+  rollBtn.addEventListener('click', ()=>{ if(!spinning) roll(); });
+  machine.addEventListener('click', (e)=>{
+    if(e.target.id === 'crankHit' || e.target.id === 'knob') return; // 避免拖拽時誤觸
+    if(!spinning) roll();
+  });
+  copyBtn.addEventListener('click', copyResult);
+  resetBtn.addEventListener('click', resetAll);
 
-    if(results.length >= ROUND_MAX){
-      showSummary();
-      return;
-    }
-    roundNowEl.textContent = String(results.length + 1);
-    beginRound();
-  }
+  // 鍵盤（外接鍵盤）
+  window.addEventListener('keydown', (e)=>{
+    if(e.code === 'Space'){ e.preventDefault(); if(!spinning) roll(); }
+    else if(e.key.toLowerCase() === 'r'){ resetAll(); }
+    else if(e.key.toLowerCase() === 'c'){ copyResult(); }
+  }, {passive:false});
 
-  /** ====== 結算頁：上傳、排行、徽章、截圖 ====== */
-  async function showSummary(){
-    // 平均、最佳
-    const avg = Math.round(results.reduce((s,r)=>s+r.percent,0)/results.length);
-    const best = results.reduce((m,r)=> r.percent>m.percent? r:m, results[0]);
-
-    avgVal.textContent = `${avg}%`;
-    // 最佳徽章
-    bestWrap.style.display = 'inline-block';
-    bestVal.textContent = `${best.percent}%`;
-    bestBadge.classList.toggle('sparkle', best.percent >= 90);
-
-    // 填表
-    resultRows.innerHTML = '';
-    results.forEach(r=>{
-      const tr = document.createElement('tr');
-      tr.className = 'row';
-      tr.innerHTML = `
-        <td>第 ${r.round}</td>
-        <td><strong>${r.percent}%</strong>${r===best? ' <span class="bestBadge" style="margin-left:8px;">⭐</span>':''}</td>
-        <td>
-          <span class="sw" style="background:${r.targetHex}"></span>
-          <small style="opacity:.8"> ${r.targetHex}</small>
-          <span style="opacity:.5; margin:0 6px">→</span>
-          <span class="sw" style="background:${r.shotHex}"></span>
-          <small style="opacity:.8"> ${r.shotHex}</small>
-        </td>`;
-      resultRows.appendChild(tr);
+  // 權重輸入格式整理
+  Object.values(oddsInputs).forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      if(inp.value === '') return;
+      const v = Math.max(0, Math.round(Number(inp.value)||0));
+      inp.value = String(v);
     });
-
-    modal.classList.add('show');
-
-    // 上傳分數
-    const name = getPlayerName();
-    try{
-      await fetch(API_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({name, score: avg})
-      });
-    }catch(err){ console.warn('Upload failed:', err); }
-
-    // 取得排行榜
-    try{
-      const top = await fetch(API_URL + '?limit=5').then(r=>r.json());
-      leaderList.innerHTML = '';
-      (Array.isArray(top)?top:[]).forEach(item=>{
-        const li = document.createElement('li');
-        li.textContent = `${item.name} — ${item.score}%`;
-        leaderList.appendChild(li);
-      });
-    }catch(err){
-      leaderList.innerHTML = '<li class="meta">排行榜載入失敗</li>';
-    }
-  }
-
-  function resetGame(){
-    results.length = 0;
-    roundNow = 1;
-    roundNowEl.textContent = '1';
-    beginRound();
-  }
-
-  // 下載成圖片
-  btnSavePng.addEventListener('click', async ()=>{
-    // 等待 html2canvas 載入
-    if (typeof html2canvas === 'undefined') {
-      alert('畫布工具尚未載入，請稍後再試。');
-      return;
-    }
-    const canvasShot = await html2canvas(resultCard, {backgroundColor: null});
-    const link = document.createElement('a');
-    link.download = 'color-match-result.png';
-    link.href = canvasShot.toDataURL('image/png');
-    link.click();
   });
 
-  /** ====== 名字儲存 ====== */
-  function getPlayerName(){
-    return localStorage.getItem('cm_name') || 'Player';
-  }
-  function ensurePlayerName(){
-    const saved = localStorage.getItem('cm_name');
-    if(saved && saved.trim()) return;
-    nameMask.classList.add('show');
-  }
-  nameOK.addEventListener('click', ()=>{
-    const v = (nameInput.value||'').trim().slice(0,32) || 'Player';
-    localStorage.setItem('cm_name', v);
-    nameMask.classList.remove('show');
-  });
-
-  /** ====== 事件 ====== */
-  btnStart.addEventListener('click', async ()=>{
-    ensurePlayerName();
-    await startCamera();
-    if (video.readyState >= 2){ beginRound(); btnStart.disabled = true; }
-    else { video.addEventListener('loadedmetadata', ()=>{ beginRound(); btnStart.disabled = true; }, {once:true}); }
-  });
-
-  btnNew.addEventListener('click', ()=>{
-    setTarget(randomTargetColor());
-    resetShotAndScore();
-    btnCapture.disabled = false;
-    if (navigator.vibrate) navigator.vibrate(8);
-  });
-
-  btnCapture.addEventListener('click', ()=>{
-    if(btnCapture.disabled || !target) return;
-    const shot = captureCenterAverage(0.44);
-    setShot(shot);
-    const dE = ciede2000(rgbToLab(target), rgbToLab(shot));
-    const percent = percentFromDeltaE(dE);
-    lastScore = percent;
-
-    scoreEl.textContent = `${percent}%`;
-    deltaEEl.textContent = `ΔE ${dE.toFixed(2)}`;
-    judgeEl.textContent = dE<2 ? "幾乎一樣 😲" : dE<5 ? "非常接近 🔥" : dE<10 ? "不錯了 👍" : dE<20 ? "還可以 👀" : "再試試看～ 💪";
-    if (navigator.vibrate) navigator.vibrate(12);
-  });
-
-  btnRetry.addEventListener('click', ()=>{
-    modal.classList.remove('show');
-    resetGame();
-  });
-
-  // 預設回合顯示
-  roundNowEl.textContent = '1';
-  roundMaxEl.textContent = String(ROUND_MAX);
+  // 初始
+  updateCounts();
 })();
 </script>
 </body>
