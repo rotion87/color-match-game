@@ -3,377 +3,81 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>ガラガラ福引き｜iPad 中心把手 全功能版</title>
+<title>ガラガラ福引き｜中心把手版</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-  :root{
-    --bg:#f6f7fb; --ink:#101418; --sub:#66707a; --card:#fff;
-    --shadow:0 10px 30px rgba(0,0,0,.10); --radius:22px;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%}
-  body{
-    margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans TC",Segoe UI,Roboto;
-    background:radial-gradient(1200px 800px at 70% -10%, #fff, var(--bg));
-    color:var(--ink); overscroll-behavior:none;
-  }
-  body.lock{overflow:hidden;position:relative}
-  .wrap{max-width:1280px;margin:0 auto;padding:22px;padding-bottom:max(22px,env(safe-area-inset-bottom))}
-  header{margin-bottom:12px}
-  h1{margin:0;font-size:clamp(18px,2.6vw,28px)}
-  .sub{color:var(--sub);margin:6px 0 0}
-  main{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
-  @media (max-width:1024px){main{grid-template-columns:1fr}}
-  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-  .stage{display:grid;grid-template-rows:auto 1fr auto;gap:16px;min-height:520px}
-  .machine{position:relative;height:min(58vh,580px);display:grid;place-items:center;overflow:hidden;touch-action:none}
-  .drum{width:min(520px,92%);aspect-ratio:1/1}
-  .hex{transform-origin:100px 100px}
-  .crank{transform-origin:100px 100px}
-  /* 抽獎動畫：轉盤＋把手一起轉 */
-  .spin .hex,.spin .crank{animation:roll 1.4s cubic-bezier(.2,.7,.2,1) forwards}
+  body{margin:0;background:#f7f8fa;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;-webkit-user-select:none;user-select:none;}
+  .machine{position:relative;touch-action:none;}
+  svg{width:300px;height:300px;}
+  .hex,.crank{transform-origin:100px 100px;transition:transform .3s ease-out;}
+  .spin .hex,.spin .crank{animation:roll 1.4s cubic-bezier(.2,.7,.2,1) forwards;}
   @keyframes roll{0%{transform:rotate(0)}100%{transform:rotate(720deg)}}
-
-  .ball-slot{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px}
-  .ball{width:72px;height:72px;border-radius:50%;border:3px solid #1112;background:#e5e7eb;
-        box-shadow:inset 0 8px 12px rgba(255,255,255,.7), inset 0 -10px 14px rgba(0,0,0,.15), 0 10px 16px rgba(0,0,0,.08);
-        display:grid;place-items:center;font-weight:800;color:#111c;transform:translateY(90px);opacity:0}
-  .ball.show{animation:pop .5s ease-out forwards}
-  @keyframes pop{0%{transform:translateY(90px) scale(.9);opacity:0}60%{transform:translateY(-6px) scale(1.04);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
-  .label{font-size:22px;font-weight:800;letter-spacing:.08em;padding:10px 16px;border-radius:14px;background:#111;color:#fff;
-         box-shadow:0 8px 18px rgba(0,0,0,.18);min-width:112px;text-align:center}
-
-  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
-  button{appearance:none;border:0;cursor:pointer;padding:16px 22px;border-radius:16px;font-weight:800;background:#111;color:#fff;min-height:56px;font-size:18px}
-  button:active{transform:translateY(1px)}
-  .btn-ghost{background:#e5e7eb;color:#111}
-  .btn-success{background:#16a34a}
-
-  .odds{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
-  .odds .row{display:flex;align-items:center;gap:10px;background:#f3f4f6;border-radius:14px;padding:12px 14px;font-size:18px}
-  .chip{width:22px;height:22px;border-radius:50%;border:2px solid #1113;box-shadow:inset 0 3px 5px rgba(255,255,255,.7), inset 0 -3px 5px rgba(0,0,0,.2);flex:0 0 22px}
-  .chip.white{background:#fafafa}.chip.blue{background:#3b82f6}.chip.red{background:#ef4444}.chip.yellow{background:#fbbf24}
-  input[type="number"]{width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;font-size:18px}
-
-  .stats{display:grid;gap:12px}
-  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  .pill{display:grid;gap:8px;justify-items:center;padding:14px;border-radius:16px;background:#f3f4f6}
-  .pill .count{font-size:28px;font-weight:900}
-  .history{margin-top:8px;max-height:42vh;overflow:auto;border:1px dashed #e5e7eb;border-radius:14px;padding:12px;background:#fff}
-  .history .item{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid #f3f4f6}
-  .history .item:last-child{border-bottom:0}
-  .time{color:#9ca3af;font-size:13px;margin-left:auto}
-  #confetti{position:fixed;inset:0;pointer-events:none}
-  #crankHit{cursor:grab;touch-action:none}
-  .grabbing #crankHit{cursor:grabbing}
+  #crankHit{cursor:grab;touch-action:none;}
+  .grabbing #crankHit{cursor:grabbing;}
+  .label{position:absolute;width:100%;text-align:center;bottom:-50px;font-weight:700;font-size:18px;}
 </style>
 </head>
 <body>
-<canvas id="confetti"></canvas>
-<div class="wrap">
-  <header>
-    <h1>ガラガラ福引き｜iPad 中心把手 全功能版</h1>
-    <p class="sub">抓住**中心把手**往同方向轉，累積約 <b>360°</b> 會自動抽獎。也可點畫面抽。</p>
-  </header>
-
-  <main>
-    <section class="card stage">
-      <div class="machine" id="machine" title="抓住把手旋轉試試看">
-        <svg class="drum" id="drumSvg" viewBox="0 0 200 200" role="img" aria-label="福引き機">
-          <defs>
-            <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#b45309"/>
-            </linearGradient>
-            <linearGradient id="wood" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stop-color="#d6b28a"/><stop offset="1" stop-color="#a8825a"/>
-            </linearGradient>
-          </defs>
-          <!-- 底座 -->
-          <rect x="20" y="160" width="160" height="18" rx="6" fill="url(#wood)"/>
-          <rect x="50" y="150" width="100" height="10" rx="4" fill="url(#wood)"/>
-          <!-- 轉盤 -->
-          <g class="hex" id="hex">
-            <polygon points="100,35 145,55 165,100 145,145 100,165 55,145 35,100 55,55" fill="url(#g1)" stroke="#8b5a11" stroke-width="2"/>
-            <polygon points="100,60 130,73 140,100 130,127 100,140 70,127 60,100 70,73" fill="#fde68a" opacity=".9" stroke="#b45309" stroke-width="1.5"/>
-            <circle cx="100" cy="100" r="7" fill="#1f2937"/>
-          </g>
-          <!-- 把手（中心軸，旋轉原點在 100,100） -->
-          <g class="crank" id="crank">
-            <circle cx="100" cy="100" r="9" fill="#444"/>
-            <line x1="100" y1="100" x2="100" y2="65" stroke="#222" stroke-width="6" stroke-linecap="round"/>
-            <circle id="knob" cx="100" cy="65" r="9" fill="#111"/>
-            <!-- 把手可點擊的較大範圍 -->
-            <circle id="crankHit" cx="100" cy="65" r="20" fill="transparent"/>
-          </g>
-          <!-- 出球口 -->
-          <rect x="92" y="138" width="16" height="22" rx="3" fill="#111"/>
-          <rect x="84" y="156" width="32" height="8" rx="3" fill="#111"/>
-        </svg>
-
-        <div class="ball-slot" aria-live="polite">
-          <div class="ball" id="ball"><span id="ballText">？</span></div>
-          <div class="label" id="label">抓住把手轉動</div>
-        </div>
-      </div>
-
-      <div class="controls">
-        <button id="rollBtn">🎲 點一下抽</button>
-        <button class="btn-ghost" id="copyBtn">複製結果</button>
-        <button class="btn-success" id="resetBtn">重置</button>
-      </div>
-
-      <div class="odds" aria-label="中獎機率設定">
-        <div class="row"><span class="chip white"></span><label>白 <input type="number" min="0" step="1" value="60" id="odds-white"></label></div>
-        <div class="row"><span class="chip blue"></span><label>藍 <input type="number" min="0" step="1" value="20" id="odds-blue"></label></div>
-        <div class="row"><span class="chip red"></span><label>紅 <input type="number" min="0" step="1" value="15" id="odds-red"></label></div>
-        <div class="row"><span class="chip yellow"></span><label>黃 <input type="number" min="0" step="1" value="5" id="odds-yellow"></label></div>
-        <div class="sub" style="grid-column:1/-1;text-align:center">數字為「權重」，總和不必=100；轉滿一圈（約360°）自動抽獎</div>
-      </div>
-    </section>
-
-    <aside class="card">
-      <div class="stats">
-        <div class="statgrid">
-          <div class="pill"><div class="chip white"></div><div>白</div><div class="count" id="c-white">0</div></div>
-          <div class="pill"><div class="chip blue"></div><div>藍</div><div class="count" id="c-blue">0</div></div>
-          <div class="pill"><div class="chip red"></div><div>紅</div><div class="count" id="c-red">0</div></div>
-          <div class="pill"><div class="chip yellow"></div><div>黃</div><div class="count" id="c-yellow">0</div></div>
-        </div>
-        <div class="history" id="history"></div>
-      </div>
-    </aside>
-  </main>
+<div class="machine" id="machine">
+  <svg viewBox="0 0 200 200">
+    <!-- 六角輪盤 -->
+    <g class="hex" id="hex">
+      <polygon points="100,30 160,60 160,140 100,170 40,140 40,60" fill="#f9cc4a" stroke="#b58800" stroke-width="3"/>
+      <circle cx="100" cy="100" r="7" fill="#222"/>
+    </g>
+    <!-- 把手（中心軸） -->
+    <g class="crank" id="crank">
+      <circle cx="100" cy="100" r="9" fill="#444"/>
+      <line x1="100" y1="100" x2="100" y2="65" stroke="#222" stroke-width="5" stroke-linecap="round"/>
+      <circle id="knob" cx="100" cy="65" r="8" fill="#111"/>
+      <circle id="crankHit" cx="100" cy="65" r="18" fill="transparent"/>
+    </g>
+  </svg>
+  <div class="label" id="label">抓住把手轉動</div>
 </div>
 
 <script>
 (function(){
-  // --- DOM ---
-  const machine = document.getElementById('machine');
-  const hex = document.getElementById('hex');
-  const crank = document.getElementById('crank');
-  const crankHit = document.getElementById('crankHit');
-  const rollBtn = document.getElementById('rollBtn');
-  const copyBtn = document.getElementById('copyBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const ballEl = document.getElementById('ball');
-  const ballText = document.getElementById('ballText');
-  const labelEl = document.getElementById('label');
-  const histEl = document.getElementById('history');
+  const machine=document.getElementById('machine');
+  const hex=document.getElementById('hex');
+  const crank=document.getElementById('crank');
+  const crankHit=document.getElementById('crankHit');
+  const label=document.getElementById('label');
+  let dragging=false,lastAngle=0,accumDeg=0;
+  const TRIGGER=360;
 
-  const counters = {
-    white: document.getElementById('c-white'),
-    blue:  document.getElementById('c-blue'),
-    red:   document.getElementById('c-red'),
-    yellow:document.getElementById('c-yellow')
-  };
-  const oddsInputs = {
-    white: document.getElementById('odds-white'),
-    blue:  document.getElementById('odds-blue'),
-    red:   document.getElementById('odds-red'),
-    yellow:document.getElementById('odds-yellow')
-  };
+  function getCenter(){return {x:machine.getBoundingClientRect().left+150,y:machine.getBoundingClientRect().top+150};}
+  function angle(c,x,y){return Math.atan2(y-c.y,x-c.x);}
+  function deg(r){return r*180/Math.PI;}
+  function norm(d){while(d>180)d-=360;while(d<-180)d+=360;return d;}
 
-  // --- 常數 ---
-  const COLORS = {
-    white:{ zh:'白', ja:'白', css:'#fafafa', text:'#111', conf:'#e5e7eb' },
-    blue: { zh:'藍', ja:'青', css:'#3b82f6', text:'#fff', conf:'#93c5fd' },
-    red:  { zh:'紅', ja:'赤', css:'#ef4444', text:'#fff', conf:'#fca5a5' },
-    yellow:{ zh:'黃', ja:'黄', css:'#fbbf24', text:'#111', conf:'#fde68a' }
-  };
-  const TRIGGER_DEG = 360;
-
-  // --- 狀態 ---
-  let counts = {white:0, blue:0, red:0, yellow:0};
-  let spinning = false;
-  let lastResult = null;
-  let dragging=false, lastAngle=0, accumDeg=0;
-
-  // --- 工具 ---
-  function getSvgCenter(svgEl){
-    const r = svgEl.getBoundingClientRect();
-    return { x: r.left + r.width/2, y: r.top + r.height/2 };
+  function start(x,y){
+    dragging=true;accumDeg=0;
+    const c=getCenter();crank.dataset.cx=c.x;crank.dataset.cy=c.y;
+    lastAngle=angle(c,x,y);crank.classList.add('grabbing');document.body.classList.add('lock');
   }
-  function angleFromCenter(center, x, y){ return Math.atan2(y-center.y, x-center.x); }
-  function rad2deg(r){ return r*180/Math.PI; }
-  function normDeg(d){ while(d>180)d-=360; while(d<-180)d+=360; return d; }
-  function now(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
-
-  // --- 機率 ---
-  function readWeights(){
-    const w = {
-      white: Math.max(0, parseInt(oddsInputs.white.value||'0',10)),
-      blue:  Math.max(0, parseInt(oddsInputs.blue.value ||'0',10)),
-      red:   Math.max(0, parseInt(oddsInputs.red.value  ||'0',10)),
-      yellow:Math.max(0, parseInt(oddsInputs.yellow.value||'0',10)),
-    };
-    if(w.white + w.blue + w.red + w.yellow <= 0){ w.white=60; w.blue=20; w.red=15; w.yellow=5; }
-    return w;
+  function move(x,y){
+    if(!dragging)return;
+    const cx=parseFloat(crank.dataset.cx),cy=parseFloat(crank.dataset.cy);
+    let d=deg(angle({x:cx,y:cy},x,y)-lastAngle);d=norm(d);lastAngle=angle({x:cx,y:cy},x,y);accumDeg+=d;
+    const rot=accumDeg%360;
+    hex.style.transform=`rotate(${rot}deg)`;crank.style.transform=`rotate(${rot}deg)`;
+    label.textContent=`轉動中 ${Math.floor(Math.abs(accumDeg))}°`;
+    if(Math.abs(accumDeg)>=TRIGGER){end();spin();}
   }
-  function weightedPick(){
-    const w = readWeights();
-    let t = w.white + w.blue + w.red + w.yellow;
-    let r = Math.random() * t;
-    if((r -= w.white) < 0) return 'white';
-    if((r -= w.blue ) < 0) return 'blue';
-    if((r -= w.red  ) < 0) return 'red';
-    return 'yellow';
+  function end(){if(!dragging)return;dragging=false;crank.classList.remove('grabbing');document.body.classList.remove('lock');}
+  function spin(){
+    machine.classList.add('spin');label.textContent='抽選中…';
+    setTimeout(()=>{machine.classList.remove('spin');label.textContent='🎉中獎！';},1400);
   }
 
-  // --- 顯示&統計 ---
-  function setBall(colorKey){
-    const c = COLORS[colorKey];
-    ballEl.style.background=c.css; ballEl.style.color=c.text;
-    ballText.textContent=c.zh;
-    ballEl.classList.remove('show'); requestAnimationFrame(()=>ballEl.classList.add('show'));
-    labelEl.textContent=`中獎：${c.zh}（${c.ja}）`;
-  }
-  function addHistory(colorKey){
-    const c = COLORS[colorKey];
-    const row = document.createElement('div'); row.className='item';
-    const dot = document.createElement('span'); dot.className='chip'; dot.style.background=c.css; dot.style.borderColor='#0002';
-    const name = document.createElement('b'); name.textContent=c.zh;
-    const time = document.createElement('span'); time.className='time'; time.textContent=now();
-    row.append(dot,name,time); histEl.prepend(row);
-  }
-  function updateCounts(){
-    counters.white.textContent = counts.white;
-    counters.blue.textContent  = counts.blue;
-    counters.red.textContent   = counts.red;
-    counters.yellow.textContent= counts.yellow;
-  }
-
-  // --- 彩帶 ---
-  function confettiBurst(hexColor){
-    const canvas = document.getElementById('confetti');
-    const ctx = canvas.getContext('2d');
-    const dpr = Math.max(1, window.devicePixelRatio||1);
-    function resize(){
-      canvas.width = innerWidth * dpr;
-      canvas.height = innerHeight * dpr;
-      canvas.style.width = innerWidth + 'px';
-      canvas.style.height = innerHeight + 'px';
-    }
-    resize();
-    const parts=[], N=120, colors=[hexColor,'#ffffff','#111111','#e5e7eb'];
-    for(let i=0;i<N;i++){
-      parts.push({x:canvas.width/2,y:canvas.height/2,vx:(Math.random()-0.5)*9*dpr,vy:(Math.random()-1.2)*7*dpr,
-                  g:0.18*dpr,s:(6+Math.random()*8)*dpr,r:Math.random()*Math.PI*2,vr:(Math.random()-.5)*0.2,
-                  color:colors[Math.floor(Math.random()*colors.length)],life:80});
-    }
-    let id;
-    (function loop(){
-      id=requestAnimationFrame(loop);
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.r+=p.vr;p.life--;
-        ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.color;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s);ctx.restore();});
-      if(parts.every(p=>p.life<=0)){cancelAnimationFrame(id);ctx.clearRect(0,0,canvas.width,canvas.height);}
-    })();
-  }
-
-  // --- 抽獎 ---
-  function spinAndDraw(){
-    if(spinning) return;
-    spinning = true;
-    labelEl.textContent='抽選中…';
-    machine.classList.add('spin'); // hex + crank 一起轉
-    setTimeout(()=>{
-      machine.classList.remove('spin');
-      const color = weightedPick();
-      lastResult = color;
-      counts[color]++; updateCounts();
-      addHistory(color);
-      setBall(color);
-      confettiBurst(COLORS[color].conf);
-      spinning = false;
-    }, 1400);
-  }
-
-  // --- 把手拖曳（中心旋轉，拖曳中同步） ---
-  function startDrag(x,y){
-    if(spinning) return;
-    dragging = true; accumDeg=0;
-    const center = getSvgCenter(document.getElementById('drumSvg'));
-    crank.dataset.cx = center.x; crank.dataset.cy = center.y;
-    lastAngle = angleFromCenter(center, x, y);
-    document.body.classList.add('lock');
-    crank.classList.add('grabbing');
-  }
-  function moveDrag(x,y, prevent){
-    if(!dragging) return;
-    const cx = parseFloat(crank.dataset.cx), cy = parseFloat(crank.dataset.cy);
-    const ang = angleFromCenter({x:cx,y:cy}, x, y);
-    let delta = rad2deg(ang - lastAngle); delta = normDeg(delta);
-    lastAngle = ang; accumDeg += delta;
-
-    const rot = accumDeg % 360;
-    hex.style.transform = `rotate(${rot}deg)`;
-    crank.style.transform = `rotate(${rot}deg)`;
-    labelEl.textContent = `轉動中… ${Math.floor(Math.abs(accumDeg))}°`;
-    if(prevent) prevent();
-
-    if(Math.abs(accumDeg) >= TRIGGER_DEG){
-      endDrag();
-      setTimeout(spinAndDraw, 120);
-    }
-  }
-  function endDrag(){
-    if(!dragging) return;
-    dragging=false;
-    document.body.classList.remove('lock');
-    crank.classList.remove('grabbing');
-    // 歸零暫存旋轉（由動畫接手）
-    hex.style.transform = `rotate(0deg)`;
-    crank.style.transform = `rotate(0deg)`;
-    if(Math.abs(accumDeg) < TRIGGER_DEG){
-      labelEl.textContent = '再多轉一點！';
-      setTimeout(()=>{ if(!spinning) labelEl.textContent='抓住把手轉動'; }, 900);
-    }
-  }
-
-  // --- 事件（防滑動） ---
-  if(window.PointerEvent){
-    crankHit.addEventListener('pointerdown', e=>{ e.preventDefault(); startDrag(e.clientX, e.clientY); crankHit.setPointerCapture?.(e.pointerId); }, {passive:false});
-    window.addEventListener('pointermove', e=>{ if(!dragging) return; e.preventDefault(); moveDrag(e.clientX, e.clientY, ()=>e.preventDefault()); }, {passive:false});
-    window.addEventListener('pointerup', e=>{ if(dragging){ e.preventDefault(); endDrag(); } }, {passive:false});
-    window.addEventListener('pointercancel', e=>{ if(dragging){ e.preventDefault(); endDrag(); } }, {passive:false});
-  }else{
-    // iOS 舊版 fallback
-    crankHit.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches[0]; startDrag(t.clientX,t.clientY); }, {passive:false});
-    window.addEventListener('touchmove', e=>{ if(!dragging) return; e.preventDefault(); const t=e.touches[0]; moveDrag(t.clientX,t.clientY, ()=>e.preventDefault()); }, {passive:false});
-    window.addEventListener('touchend', e=>{ if(dragging){ e.preventDefault(); endDrag(); } }, {passive:false});
-    crankHit.addEventListener('mousedown', e=>{ e.preventDefault(); startDrag(e.clientX,e.clientY); });
-    window.addEventListener('mousemove', e=>{ if(!dragging) return; e.preventDefault(); moveDrag(e.clientX,e.clientY, ()=>e.preventDefault()); });
-    window.addEventListener('mouseup', e=>{ if(dragging){ e.preventDefault(); endDrag(); } });
-  }
-  // 阻擋雙指縮放
-  window.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
-
-  // --- 備用操作 & 公用 ---
-  rollBtn.addEventListener('click', ()=>{ if(!spinning) spinAndDraw(); });
-  machine.addEventListener('click', (e)=>{ if(e.target.id==='crankHit' || e.target.id==='knob') return; if(!spinning) spinAndDraw(); });
-
-  copyBtn.addEventListener('click', ()=>{
-    const w = readWeights();
-    const text = lastResult
-      ? `福引結果：${COLORS[lastResult].zh}（${COLORS[lastResult].ja}）｜機率權重 白/藍/紅/黃：${w.white}/${w.blue}/${w.red}/${w.yellow}`
-      : `尚未抽選。機率權重 白/藍/紅/黃：${w.white}/${w.blue}/${w.red}/${w.yellow}`;
-    navigator.clipboard.writeText(text).then(()=>{ labelEl.textContent='已複製結果'; setTimeout(()=>{ labelEl.textContent = lastResult?`中獎：${COLORS[lastResult].zh}（${COLORS[lastResult].ja}）`:'抓住把手轉動'; }, 900); });
-  });
-
-  resetBtn.addEventListener('click', ()=>{
-    counts={white:0,blue:0,red:0,yellow:0}; updateCounts();
-    histEl.innerHTML=''; lastResult=null; ballText.textContent='？'; ballEl.classList.remove('show');
-    ballEl.style.background='#e5e7eb'; ballEl.style.color='#111c'; labelEl.textContent='已重置';
-    setTimeout(()=>labelEl.textContent='抓住把手轉動', 900);
-  });
-
-  Object.values(oddsInputs).forEach(inp=>{
-    inp.addEventListener('input', ()=>{ if(inp.value==='') return; const v=Math.max(0, Math.round(Number(inp.value)||0)); inp.value=String(v); });
-  });
-
-  // 初始統計
-  updateCounts();
+  // Touch + Mouse 支援
+  crankHit.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];start(t.clientX,t.clientY);},{passive:false});
+  window.addEventListener('touchmove',e=>{if(!dragging)return;e.preventDefault();const t=e.touches[0];move(t.clientX,t.clientY);},{passive:false});
+  window.addEventListener('touchend',e=>{if(dragging){e.preventDefault();end();}},{passive:false});
+  crankHit.addEventListener('mousedown',e=>{e.preventDefault();start(e.clientX,e.clientY);});
+  window.addEventListener('mousemove',e=>{if(!dragging)return;e.preventDefault();move(e.clientX,e.clientY);});
+  window.addEventListener('mouseup',e=>{if(dragging){e.preventDefault();end();}});
 })();
 </script>
 </body>
